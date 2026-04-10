@@ -9,7 +9,7 @@ interface NavigationProps {
 
 export default function Navigation({ currentView, onViewChange }: NavigationProps) {
   const items = [
-    { id: 'home', icon: Home, label: 'InÃ­cio' },
+    { id: 'home', icon: Home, label: 'Inicio' },
     { id: 'send', icon: Send, label: 'Enviar' },
     { id: 'receive', icon: Download, label: 'Receber' },
     { id: 'chat', icon: MessageSquareText, label: 'IA Chat' },

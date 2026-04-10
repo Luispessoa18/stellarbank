@@ -79,10 +79,10 @@ export default function App() {
         setIsAuthenticated(true);
         toast.success('Bem-vindo de volta!');
       } else {
-        toast.error(data.error || 'Email ou senha invÃ¡lidos');
+        toast.error(data.error || 'Email ou senha invalidos');
       }
     } catch {
-      toast.error('Servidor indisponÃ­vel. Verifique sua conexÃ£o.');
+      toast.error('Servidor indisponivel. Verifique sua conexao.');
     }
   };
 
@@ -106,7 +106,7 @@ export default function App() {
         toast.error(data.error || 'Erro ao criar conta');
       }
     } catch {
-      toast.error('Servidor indisponÃ­vel. Verifique sua conexÃ£o.');
+      toast.error('Servidor indisponivel. Verifique sua conexao.');
     }
   };
 
@@ -164,13 +164,7 @@ export default function App() {
   const renderView = () => {
     switch (currentView) {
       case 'home':
-        return (
-          <Home
-            user={user}
-            transactions={transactions}
-            onAction={(action) => setCurrentView(action)}
-          />
-        );
+        return <Home user={user} transactions={transactions} onAction={(action) => setCurrentView(action)} />;
       case 'send':
         return <Send onBack={() => setCurrentView('home')} onSuccess={handleSendSuccess} />;
       case 'receive':

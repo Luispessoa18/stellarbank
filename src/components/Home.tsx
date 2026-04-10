@@ -1,5 +1,5 @@
 import { ArrowUpRight, ArrowDownLeft, Plus, Eye, EyeOff, Clock, ChevronRight, Landmark, TrendingUp, TrendingDown } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { Transaction, User } from '../types';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -20,7 +20,7 @@ function XlmValue({ tx, xlmUsd, isCredit }: { tx: Transaction; xlmUsd: number; i
       </p>
       {currentUsd !== null && (
         <p className="text-[10px] text-zinc-500">
-          â‰ˆ ${currentUsd.toFixed(2)}
+          ~ ${currentUsd.toFixed(2)}
         </p>
       )}
       {pctChange !== null && (
@@ -42,22 +42,11 @@ interface HomeProps {
 export default function Home({ user, transactions, onAction }: HomeProps) {
   const [showBalance, setShowBalance] = useState(true);
   const [xlmUsd, setXlmUsd] = useState(0);
-  const [xlmOnChain, setXlmOnChain] = useState(0);
 
   useEffect(() => {
     fetch('/api/stellar/price')
-      .then(r => r.json())
-      .then(d => setXlmUsd(Number(d.xlmUsd) || 0))
-      .catch(() => {});
-
-    const token = localStorage.getItem('token');
-    if (!token) return;
-    fetch('/api/stellar/balance', { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.ok ? r.json() : null)
-      .then(d => {
-        const xlm = d?.balances?.find((b: any) => b.assetCode === 'XLM' || b.asset === 'XLM');
-        if (xlm) setXlmOnChain(parseFloat(xlm.balance) || 0);
-      })
+      .then((r) => r.json())
+      .then((d) => setXlmUsd(Number(d.xlmUsd) || 0))
       .catch(() => {});
   }, []);
 
@@ -80,7 +69,7 @@ export default function Home({ user, transactions, onAction }: HomeProps) {
 
   const txTypeLabel = (type: Transaction['type']) => {
     if (type === 'receive') return 'Recebido';
-    if (type === 'deposit') return 'DepÃ³sito';
+    if (type === 'deposit') return 'Deposito';
     if (type === 'withdraw') return 'Saque';
     return 'Enviado';
   };
@@ -90,15 +79,16 @@ export default function Home({ user, transactions, onAction }: HomeProps) {
     return rate > 0 ? amount * rate : 0;
   };
 
-  const xlmPortfolioUsd = xlmOnChain > 0 ? getXlmUsdValue(xlmOnChain) : 0;
-  const legacyXlmAdjustment = transactions.reduce((total, tx) => {
-    if (tx.currency !== 'XLM' || (tx.type !== 'send' && tx.type !== 'withdraw')) {
-      return total;
-    }
+  const xlmNetAmount = transactions.reduce((total, tx) => {
+    if (tx.currency !== 'XLM') return total;
 
-    return total + (tx.amount - getXlmUsdValue(tx.amount, tx.usdPriceAtTime));
+    if (tx.type === 'receive' || tx.type === 'deposit') return total + tx.amount;
+    if (tx.type === 'send' || tx.type === 'withdraw') return total - tx.amount;
+    return total;
   }, 0);
-  const totalBalance = user.balance + xlmPortfolioUsd + legacyXlmAdjustment;
+
+  const xlmNetUsd = xlmNetAmount > 0 ? getXlmUsdValue(xlmNetAmount) : 0;
+  const totalBalance = user.balance + xlmNetUsd;
 
   const grouped: Record<string, Transaction[]> = {};
   for (const tx of transactions) {
@@ -124,9 +114,7 @@ export default function Home({ user, transactions, onAction }: HomeProps) {
     <div className="flex flex-col h-full pb-24 overflow-y-auto no-scrollbar">
       <header className="px-6 pt-10 pb-3 flex justify-between items-center">
         <div>
-          <p className="text-zinc-400 text-sm">
-            OlÃ¡, {user.name.split(' ')[0]} ðŸ‘‹
-          </p>
+          <p className="text-zinc-400 text-sm">Ola, {user.name.split(' ')[0]}</p>
           <h1 className="text-base font-semibold text-zinc-300 capitalize">{todayLabel}</h1>
         </div>
         <Avatar className="w-10 h-10 border-2 border-blue-400/30">
@@ -145,7 +133,7 @@ export default function Home({ user, transactions, onAction }: HomeProps) {
           <div className="absolute top-0 left-0 w-40 h-40 bg-primary/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
 
           <div className="flex justify-between items-start mb-1">
-            <p className="text-zinc-400 text-xs font-medium">Saldo disponÃ­vel</p>
+            <p className="text-zinc-400 text-xs font-medium">Saldo disponivel</p>
             <button
               onClick={() => setShowBalance(!showBalance)}
               className="text-zinc-400 hover:text-zinc-200 transition-colors"
@@ -155,13 +143,13 @@ export default function Home({ user, transactions, onAction }: HomeProps) {
           </div>
 
           <h2 className="text-4xl font-bold tracking-tight mb-5 text-white">
-            {showBalance ? formatCurrency(totalBalance) : '$ â€¢â€¢â€¢â€¢â€¢â€¢'}
+            {showBalance ? formatCurrency(totalBalance) : '$ ......'}
           </h2>
 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <p className="text-[11px] text-zinc-400 font-medium">Rede Stellar â€¢ Testnet</p>
+              <p className="text-[11px] text-zinc-400 font-medium">Rede Stellar - Testnet</p>
             </div>
             <div className="flex gap-1">
               {user.assets.map((a) => (
@@ -172,10 +160,9 @@ export default function Home({ user, transactions, onAction }: HomeProps) {
             </div>
           </div>
 
-          {showBalance && (xlmPortfolioUsd > 0 || legacyXlmAdjustment !== 0) && (
+          {showBalance && xlmNetAmount > 0 && (
             <p className="mt-4 text-[11px] text-zinc-400">
-              Inclui {xlmOnChain.toFixed(2)} XLM on-chain
-              {legacyXlmAdjustment !== 0 && ' e corrige envios antigos de XLM pelo equivalente em dÃ³lar'}
+              Inclui {xlmNetAmount.toFixed(2)} XLM no total em USD
             </p>
           )}
         </motion.div>
@@ -210,7 +197,7 @@ export default function Home({ user, transactions, onAction }: HomeProps) {
 
       <section className="px-6 flex-1">
         <div className="flex justify-between items-center mb-3">
-          <h2 className="text-sm font-bold text-zinc-200">TransaÃ§Ãµes</h2>
+          <h2 className="text-sm font-bold text-zinc-200">Transacoes</h2>
           <button className="text-[10px] text-primary font-bold flex items-center gap-1 hover:text-primary/80 transition-colors">
             Ver todas <ChevronRight size={11} />
           </button>
@@ -219,7 +206,7 @@ export default function Home({ user, transactions, onAction }: HomeProps) {
         {Object.keys(grouped).length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-zinc-600">
             <Landmark size={32} className="mb-3 opacity-40" />
-            <p className="text-sm">Nenhuma transaÃ§Ã£o encontrada</p>
+            <p className="text-sm">Nenhuma transacao encontrada</p>
           </div>
         ) : (
           <div className="space-y-5 pb-4">
@@ -257,7 +244,7 @@ export default function Home({ user, transactions, onAction }: HomeProps) {
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-zinc-100 truncate">{tx.counterparty}</p>
                           <p className="text-[10px] text-zinc-500">
-                            {txTypeLabel(tx.type)} â€¢ {formatTime(tx.timestamp)}
+                            {txTypeLabel(tx.type)} - {formatTime(tx.timestamp)}
                           </p>
                         </div>
 
