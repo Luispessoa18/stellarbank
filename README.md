@@ -1,4 +1,4 @@
-# DolarPix
+# Stellix
 
 Carteira digital para envio e recebimento de stablecoins (USDC/USDT) na rede **Stellar**. Interface mobile-first com autenticação JWT, banco de dados local e integração com IA via Gemini.
 
