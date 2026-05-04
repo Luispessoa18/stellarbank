@@ -69,10 +69,12 @@ export default function MarketingHome({ onSignup, onLogin, onGoTo }: Props) {
   return (
     <div>
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <section className="relative w-full py-20 md:py-28">
-        <div className="pointer-events-none absolute right-0 top-0 h-[500px] w-[500px] rounded-full bg-cyan-500/10 blur-[150px]" />
-        <div className="pointer-events-none absolute bottom-0 left-0 h-[400px] w-[400px] rounded-full bg-indigo-600/12 blur-[120px]" />
-        <div className="pointer-events-none absolute left-1/2 top-1/3 h-[500px] w-[700px] -translate-x-1/2 rounded-full bg-cyan-900/15 blur-[160px]" />
+      <section className="relative w-full overflow-x-hidden py-20 md:py-28">
+        <div className="pointer-events-none absolute left-1/2 top-0 w-screen -translate-x-1/2 md:w-auto md:translate-x-0 md:left-0">
+          <div className="absolute right-0 top-0 h-[500px] w-[500px] rounded-full bg-cyan-500/10 blur-[150px]" />
+          <div className="absolute bottom-0 left-0 h-[400px] w-[400px] rounded-full bg-indigo-600/12 blur-[120px]" />
+          <div className="absolute left-1/2 top-1/3 h-[500px] w-[700px] -translate-x-1/2 rounded-full bg-cyan-900/15 blur-[160px]" />
+        </div>
 
         <div className="relative mx-auto flex w-full max-w-7xl flex-col items-center gap-10 px-6 md:flex-row md:gap-16">
           <motion.div
@@ -148,7 +150,7 @@ export default function MarketingHome({ onSignup, onLogin, onGoTo }: Props) {
                 transition={{ delay: i * 0.1, duration: 0.35 }}
                 className="relative rounded-2xl border border-white/8 bg-white/[0.03] p-8"
               >
-                <p className="mb-4 text-5xl font-black text-white/5">{step.num}</p>
+                <p className="mb-4 text-5xl font-black text-white/20">{step.num}</p>
                 <h3 className="mb-2 text-lg font-bold text-white">{step.title}</h3>
                 <p className="text-sm leading-relaxed text-zinc-400">{step.body}</p>
               </motion.div>
