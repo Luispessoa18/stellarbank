@@ -6,3 +6,12 @@ coverage/
 *.log
 .env*
 !.env.example
+# SSH key criada sem querer
+yes
+yes.pub
+
+# Claude
+.claude/
+
+# PowerShell/Windows lixo
+Microsoft/
